@@ -21,7 +21,7 @@ class App extends Component {
     const isOffline = navigator.onLine ? false : true;
     this.setState({
       offlineInfo: isOffline
-        ? "No internet connection. Data is loaded from cache."
+        ? "No active internet connection. Data is loaded from cache."
         : null
     });
     getEvents().then((events) => {
