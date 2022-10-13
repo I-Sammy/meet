@@ -13,18 +13,11 @@ class App extends Component {
     events: [],
     locations: [],
     locationSelected: 'all',
-    numberOfEvents: 32,
-    offlineInfo: ''
+    numberOfEvents: 32
   }
 
   componentDidMount() {
     this.mounted = true;
-    const isOffline = navigator.onLine ? false : true;
-    this.setState({
-      offlineInfo: isOffline
-        ? "No internet connection is available. Data is loaded from cache."
-        : " "
-    });
     getEvents().then((events) => {
       if (this.mounted) {
         this.setState({
@@ -33,6 +26,16 @@ class App extends Component {
         });
       }
     });
+
+    if (!navigator.onLine) {
+      this.setState({
+        offlineInfo: "Your're offline! The data has been loaded from the cache.",
+      });
+    } else {
+      this.setState({
+        offlineInfo: '',
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -44,18 +47,11 @@ class App extends Component {
       const locationEvents = (location === 'all') ?
         events :
         events.filter((event) => event.location === location);
-      const isOffline = navigator.onLine ? false : true;
-      this.setState({
-        events: locationEvents,
-        offlineInfo: isOffline
-          ? "No internet connection is available. Data is loaded from cache."
-          : " "
-      });
     });
   }
 
   render() {
-    let { locations, numberOfEvents, events } = this.state;
+    let { locations, numberOfEvents, events, offlineInfo } = this.state;
     return (
       <div className="App">
         <h1>The Meet App</h1>
@@ -63,7 +59,7 @@ class App extends Component {
         <CitySearch locations={locations} updateEvents={this.updateEvents} />
         <NumberOfEvents updateEvents={this.updateEvents} numberOfEvents={numberOfEvents} />
         <div className="warningAlert">
-          <WarningAlert text={this.state.offlineInfo} />
+          <WarningAlert text={offlineInfo} />
         </div>
         <EventList events={events} />
       </div>
