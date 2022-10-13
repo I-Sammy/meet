@@ -13,7 +13,8 @@ class App extends Component {
     events: [],
     locations: [],
     locationSelected: 'all',
-    numberOfEvents: 32
+    numberOfEvents: 32,
+    offlineInfo: ''
   }
 
   componentDidMount() {
