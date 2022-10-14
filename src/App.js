@@ -4,8 +4,9 @@ import "./nprogress.css";
 import EventList from './EventList';
 import CitySearch from './CitySearch';
 import NumberOfEvents from './NumberOfEvents';
-import { getEvents, extractLocations } from './api';
+import { getEvents, extractLocations, checkToken, getAccessToken } from './api';
 import { WarningAlert } from "./Alert";
+import WelcomeScreen from './WelcomeScreen';
 
 
 class App extends Component {
@@ -13,20 +14,29 @@ class App extends Component {
     events: [],
     locations: [],
     locationSelected: 'all',
-    numberOfEvents: 32
+    numberOfEvents: 32,
+    showWelcomeScreen: undefined
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.mounted = true;
-    getEvents().then((events) => {
-      if (this.mounted) {
-        this.setState({
-          events: events.slice(0, this.state.numberOfEvents)
-          , locations: extractLocations(events)
-        });
-      }
-    });
+    const accessToken = localStorage.getItem('access_token');
+    const isTokenValid = (await checkToken(accessToken)).error ? false :
+      true;
+    const searchParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get("code");
+    this.setState({ showWelcomeScreen: !(code || isTokenValid) })
 
+    if ((code || isTokenValid) && this.mounted) {
+      getEvents().then((events) => {
+        if (this.mounted) {
+          this.setState({
+            events: events.slice(0, this.state.numberOfEvents),
+            locations: extractLocations(events)
+          });
+        }
+      });
+    }
     if (!navigator.onLine) {
       this.setState({
         offlineInfo: "Your're offline! The data has been loaded from the cache.",
@@ -51,17 +61,23 @@ class App extends Component {
   }
 
   render() {
-    let { locations, numberOfEvents, events, offlineInfo } = this.state;
+    let { locations, numberOfEvents, events, offlineInfo, showWelcomeScreen } = this.state;
+
+    if (this.state.showWelcomeScreen === undefined) return <div
+      className="App" />
+
     return (
       <div className="App">
         <h1>The Meet App</h1>
-        <h3 className="subtitle">Search for a city to see its upcoming events:</h3>
-        <CitySearch locations={locations} updateEvents={this.updateEvents} />
-        <NumberOfEvents updateEvents={this.updateEvents} numberOfEvents={numberOfEvents} />
         <div className="warningAlert">
           <WarningAlert text={offlineInfo} />
         </div>
+        <h3 className="subtitle">Search for a city to see its upcoming events:</h3>
+        <CitySearch locations={locations} updateEvents={this.updateEvents} />
+        <NumberOfEvents updateEvents={this.updateEvents} numberOfEvents={numberOfEvents} />
         <EventList events={events} />
+        <WelcomeScreen showWelcomeScreen={this.state.showWelcomeScreen}
+          getAccessToken={() => { getAccessToken() }} />
       </div>
     );
   }
