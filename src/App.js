@@ -52,13 +52,33 @@ class App extends Component {
     this.mounted = false;
   }
 
-  updateEvents = (location) => {
+  updateEvents = (location, eventCount) => {
+    if (!location) location = 'all';
+    !eventCount
+      ? (eventCount = this.state.numberOfEvents)
+      : this.setState({ numberOfEvents: eventCount });
+
     getEvents().then((events) => {
       const locationEvents = (location === 'all') ?
         events :
         events.filter((event) => event.location === location);
+      this.setState({
+        events: locationEvents.slice(0, eventCount),
+      });
     });
   }
+
+  getData = () => {
+    const { locations, events } = this.state;
+    const data = locations.map((location) => {
+      const number = events.filter(
+        (event) => event.location === location
+      ).length;
+      const city = location.split(/[,-]/).shift();
+      return { city, number };
+    });
+    return data;
+  };
 
   render() {
     let { locations, numberOfEvents, events, offlineInfo, showWelcomeScreen } = this.state;
