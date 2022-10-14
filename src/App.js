@@ -63,9 +63,9 @@ class App extends Component {
   render() {
     let { locations, numberOfEvents, events, offlineInfo, showWelcomeScreen } = this.state;
 
-    if (this.state.showWelcomeScreen === undefined) return <div
-      className="App" />
-
+    // if (this.state.showWelcomeScreen === undefined) return <div
+    //   className="App" />
+    if (!showWelcomeScreen) return <div className="App" />;
     return (
       <div className="App">
         <h1>The Meet App</h1>
@@ -76,7 +76,7 @@ class App extends Component {
         <CitySearch locations={locations} updateEvents={this.updateEvents} />
         <NumberOfEvents updateEvents={this.updateEvents} numberOfEvents={numberOfEvents} />
         <EventList events={events} />
-        <WelcomeScreen showWelcomeScreen={this.state.showWelcomeScreen}
+        <WelcomeScreen showWelcomeScreen={showWelcomeScreen}
           getAccessToken={() => { getAccessToken() }} />
       </div>
     );
