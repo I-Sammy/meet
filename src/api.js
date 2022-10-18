@@ -1,33 +1,12 @@
 import { mockData } from './mock-data';
 import axios from 'axios';
 import NProgress from 'nprogress';
-/**
- *
- * @param {*} events:
- * The following function should be in the “api.js” file.
- * This function takes an events array, then uses map to create a new array with only locations.
- * It will also remove all duplicates by creating another new array using the spread operator and spreading a Set.
- * The Set will remove all duplicates from the array.
- */
+import './nprogress.css';
+
 export const extractLocations = (events) => {
   var extractLocations = events.map((event) => event.location);
   var locations = [...new Set(extractLocations)];
   return locations;
-};
-
-const getToken = async (code) => {
-  const encodeCode = encodeURIComponent(code);
-  const { access_token } = await fetch(
-    'https://pu5bfykfqe.execute-api.eu-central-1.amazonaws.com/dev/api/token' + '/' + encodeCode
-  )
-    .then((res) => {
-      return res.json();
-    })
-    .catch((error) => error);
-
-  access_token && localStorage.setItem("access_token", access_token);
-
-  return access_token;
 };
 
 export const checkToken = async (accessToken) => {
@@ -39,6 +18,26 @@ export const checkToken = async (accessToken) => {
 
   return result;
 };
+
+const getToken = async (code) => {
+  try {
+    const encodeCode = encodeURIComponent(code);
+    const response = await fetch(
+      'https://pu5bfykfqe.execute-api.eu-central-1.amazonaws.com/dev/api/token' + '/' + encodeCode
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const { access_token } = await response.json();
+    access_token && localStorage.setItem('access_token', access_token);
+    return access_token;
+  } catch (error) {
+    error.json();
+  }
+};
+
+
 
 const removeQuery = () => {
   if (window.history.pushState && window.location.pathname) {
